@@ -1,0 +1,44 @@
+plugins {
+    id 'scala'
+    id 'java-library'
+}
+
+sourceCompatibility = 1.8
+
+repositories {
+//    mavenCentral()
+//    other {url 'https://mvnrepository.com/artifact/com.typesafe/config'}
+    maven { url 'https://maven.aliyun.com/nexus/content/groups/public/' }
+}
+
+
+String sparkVersion = '2.4.4'
+String scalaBaseVersion ='2.11'
+
+dependencies {
+
+
+
+    implementation 'org.scala-lang:scala-library:'+scalaBaseVersion
+    implementation 'mysql:mysql-connector-java:5.1.48'
+    implementation 'org.mybatis:mybatis:3.5.2'
+    implementation 'org.apache.spark:spark-core_' +scalaBaseVersion+':'+sparkVersion
+    implementation 'org.apache.spark:spark-sql_' +scalaBaseVersion+':'+sparkVersion
+    implementation 'org.apache.spark:spark-hive_' +scalaBaseVersion+':'+sparkVersion
+//    implementation 'com.typesafe:config:1.3.4'
+
+
+//    implementation 'org.scala-lang:scala-library:2.11.10'
+    testImplementation 'junit:junit:4.12'
+
+
+}
+
+jar{
+    baseName 'wk_batch'
+    manifest {
+        attributes 'Main-Class': 'com.zhangweiwhim.RepayCalc'
+    }
+    version 0.1
+}
+
