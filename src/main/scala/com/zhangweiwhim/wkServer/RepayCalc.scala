@@ -1,4 +1,4 @@
-package com.zhangweiwhim
+package com.zhangweiwhim.wkServer
 
 import java.sql.{Connection, DriverManager}
 import java.time.LocalDate.now
@@ -18,7 +18,7 @@ object RepayCalc {
   def main(args: Array[String]): Unit = {
 
     // 命令行参数
-    val exec_date = if (args.length == 0) now
+    val exec_date = now
     println(s"exec_date:\t${exec_date}")
 
     val spark = SparkSession
@@ -47,27 +47,5 @@ object RepayCalc {
     // wk表写入数据库
     calcDF.write.option("truncate", "true").mode(SaveMode.Overwrite).jdbc(url, table, connectionProperties)
     spark.stop()
-    //更新标签
-    val conn: Connection = getOnlineConnection(url, mysqlUser, mysqlPassword)
-    try {
-      conn.setAutoCommit(false)
-      val sql = new StringBuilder()
-        .append("replace into wk_result (id,reuslt) values(?,?)")
-      val pstm = conn.prepareStatement(sql.toString())
-      pstm.setInt(1, 102)
-      pstm.setString(2, "ok")
-      pstm.executeBatch()
-      pstm.executeUpdate() > 0
-      conn.commit()
-    }
-    finally {
-      conn.close()
-    }
   }
-
-  def getOnlineConnection(onlineUrl: String, username: String, password: String): Connection = {
-    DriverManager.getConnection(onlineUrl, username, password)
-  }
-
-
 }

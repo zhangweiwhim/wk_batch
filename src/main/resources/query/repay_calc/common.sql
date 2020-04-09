@@ -14,16 +14,16 @@ with ods_repayschedule_format as (
      calc_org as (
          select t1.applyid,
                 t1.applycd,
-                sum(if(t2.paytype in (12) and t2.realpaiddate is null, t2.amount, 0))                                           as remainseed,              -- 剩余本金
-                sum(if(t2.paytype in (13, 22) and t2.realpaiddate is null, t2.amount, 0))                                       as remaininterest,          -- 剩余利息
-                sum(if(t2.paytype in (14) and t2.realpaiddate is null, t2.amount, 0))                                           as remainremain,            -- 剩余尾款
+                sum(if(t2.paytype in (12) and t2.realpaiddate is null, t2.amount, 0))                                           as remainseed,
+                sum(if(t2.paytype in (13, 22) and t2.realpaiddate is null, t2.amount, 0))                                       as remaininterest,
+                sum(if(t2.paytype in (14) and t2.realpaiddate is null, t2.amount, 0))                                           as remainremain,
                 if(sum(if(t2.paytype in (12) and t2.realpaiddate is null, 1, 0)) = 0,
                    sum(if(t2.paytype = 14 and t2.realpaiddate is null, 1, 0)),
-                   sum(if(t2.paytype in (12) and t2.realpaiddate is null, 1, 0)))                                               as remaincount,             -- 剩余期数
-                sum(if(t2.paytype in (12, 13, 22) and t2.realpaiddate is not null, t2.amount, 0))                               as realreceiverefundamount, -- 实收月供
-                sum(if(t2.paytype in (12, 13, 14, 22) and t2.realpaiddate is null and t2.repaydate >= ${exec_date}, amount, 0)) as remainamount,            -- 剩余租金
-                sum(if(t2.paytype in (9) and t2.realpaiddate is null, t2.amount, 0))                                            as legalfee,                -- 剩余诉讼费用
-                sum(if(t2.paytype between 2 and 7 and t2.realpaiddate is null, t2.amount, 0))                                   as collectfee,              -- 剩余催收费用
+                   sum(if(t2.paytype in (12) and t2.realpaiddate is null, 1, 0)))                                               as remaincount,
+                sum(if(t2.paytype in (12, 13, 22) and t2.realpaiddate is not null, t2.amount, 0))                               as realreceiverefundamount,
+                sum(if(t2.paytype in (12, 13, 14, 22) and t2.realpaiddate is null and t2.repaydate >= ${exec_date}, amount, 0)) as remainamount,
+                sum(if(t2.paytype in (9) and t2.realpaiddate is null, t2.amount, 0))                                            as legalfee,
+                sum(if(t2.paytype between 2 and 7 and t2.realpaiddate is null, t2.amount, 0))                                   as collectfee,
                 max(t2.realpaiddate)                                                                                            as recentdeducttime
          from ods.ods_c_applyinfo t1
                   left join ods_repayschedule_format t2 on t1.applyid = t2.applyid
@@ -36,8 +36,8 @@ with ods_repayschedule_format as (
 
      overduefine as (
          select t1.applyid,
-                sum(if(t2.paytype in (12, 13, 22), t2.amount, 0))                                                                 as receiverefundamount, -- 应收月供
-                sum(if(t2.paytype in (16) and t2.realpaiddate is null and t2.resultflg <> 6 and t2.resultflg <> 8, t2.amount, 0)) as overduefine          -- 剩余逾期息
+                sum(if(t2.paytype in (12, 13, 22), t2.amount, 0))                                                                 as receiverefundamount,
+                sum(if(t2.paytype in (16) and t2.realpaiddate is null and t2.resultflg <> 6 and t2.resultflg <> 8, t2.amount, 0)) as overduefine
          from ods.ods_c_applyinfo t1
                   left join ods_repayschedule_format t2 on t1.applyid = t2.applyid
          where t1.dt = ${exec_date}
@@ -50,19 +50,19 @@ with ods_repayschedule_format as (
 
      overdue_items as (
          select t.applyid,
-                count(distinct t.seqno)                   as dueterms,    -- 逾期期数
-                sum(if(t.paytype in (12), amount, 0))     as dueseed,     -- 逾期本金
-                sum(if(t.paytype in (13, 22), amount, 0)) as dueinterest, -- 逾期利息
-                sum(if(t.paytype in (14), amount, 0))     as dueremain,   -- 逾期尾款
-                min(t.seqno)                              as dueseqno,    -- 最初逾期期号
-                max(t.repaydate)                          as maxduedate,  -- 最新逾期日期
+                count(distinct t.seqno)                   as dueterms,
+                sum(if(t.paytype in (12), amount, 0))     as dueseed,
+                sum(if(t.paytype in (13, 22), amount, 0)) as dueinterest,
+                sum(if(t.paytype in (14), amount, 0))     as dueremain,
+                min(t.seqno)                              as dueseqno,
+                max(t.repaydate)                          as maxduedate,
                 if(min(t.resultflg) = 3, 1, 0)            as chuckflg
          from ods_repayschedule_format t
          where t.seqno > 0
            and t.repaydate < ${exec_date}
            and t.repaymonth <= date_format(${exec_date}, 'yyyyMM')
            and t.realpaiddate is null
---            and t.paytype != 19 -- #17152删除 bug point
+--            and t.paytype != 19 -- #17152delete bug point
            and not exists (select 1
                            from ods_repayschedule_format
                            where applyid = t.applyid
@@ -75,15 +75,15 @@ with ods_repayschedule_format as (
      duedate as (
          select t.applyid,
                 t.seqno,
-                min(t.repaydate)                         as duedate,    -- 最初逾期日期
-                datediff(${exec_date}, min(t.repaydate)) as overduedays -- 逾期天数
+                min(t.repaydate)                         as duedate,
+                datediff(${exec_date}, min(t.repaydate)) as overduedays
          from ods_repayschedule_format t
          group by t.applyid, t.seqno
      ),
 
      leasehold as (
          select applyid,
-                    count(distinct seqno) as leasehold -- 已归还期数
+                    count(distinct seqno) as leasehold
          from ods_repayschedule_format t
          where paytype in (12, 14)
 --            and not exists (select 1
@@ -91,12 +91,12 @@ with ods_repayschedule_format as (
 --                            where applyid = t.applyid
 --                              and seqno = t.seqno
 --                              and (paytype = 16 or paytype = 13)
---                              and realpaiddate is null)  -- #17152删除 bug point
+--                              and realpaiddate is null)  -- #17152delete bug point
            and realpaiddate is not null
          group by applyid
      ),
 
-     -- 网商银行
+     -- wangshangbank
      mybank_org as (
          select applyid,
                 0                              as remainremain,
@@ -126,7 +126,7 @@ with ods_repayschedule_format as (
          group by applyid, applycd
      ),
 
-     -- 结果集
+     -- result
      final as (
          select t1.applyid,
                 t1.applycd,
