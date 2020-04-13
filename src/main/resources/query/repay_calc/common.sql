@@ -29,7 +29,7 @@ with ods_repayschedule_format as (
                   left join ods_repayschedule_format t2 on t1.applyid = t2.applyid
          where t1.dt = ${exec_date}
            and t1.closedate is null
-           and t1.fininstid in (4, 5, 6)
+--            and t1.fininstid in (4, 5, 6)
            and t1.applycd not in ('BAH1211701014788', 'BAH12116119541', 'BAH1211612350823', 'BAH1211701002653')
          group by t1.applyid, t1.applycd
      ),
