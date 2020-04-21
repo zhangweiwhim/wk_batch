@@ -7,6 +7,7 @@ with ods_repayschedule_format as (
            resultflg,
            date_format(repaydate, 'yyyy-MM-dd')    as repaydate,
            date_format(realpaiddate, 'yyyy-MM-dd') as realpaiddate,
+           realpaiddate as realpaiddateAll,
            repaymonth
     from ods.ods_t_repayschedule
 ),
@@ -24,12 +25,12 @@ with ods_repayschedule_format as (
                 sum(if(t2.paytype in (12, 13, 14, 22) and t2.realpaiddate is null and t2.repaydate >= ${exec_date}, amount, 0)) as remainamount,
                 sum(if(t2.paytype in (9) and t2.realpaiddate is null, t2.amount, 0))                                            as legalfee,
                 sum(if(t2.paytype between 2 and 7 and t2.realpaiddate is null, t2.amount, 0))                                   as collectfee,
-                max(t2.realpaiddate)                                                                                            as recentdeducttime
+                max(t2.realpaiddateAll)                                                                                            as recentdeducttime
          from ods.ods_c_applyinfo t1
                   left join ods_repayschedule_format t2 on t1.applyid = t2.applyid
          where t1.dt = ${exec_date}
            and t1.closedate is null
---            and t1.fininstid in (4, 5, 6)
+           and t1.fininstid in (4, 5, 6)
            and t1.applycd not in ('BAH1211701014788', 'BAH12116119541', 'BAH1211612350823', 'BAH1211701002653')
          group by t1.applyid, t1.applycd
      ),
